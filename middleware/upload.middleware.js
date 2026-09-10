@@ -1,29 +1,27 @@
 const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
+// Create uploads folder if it does not exist
+const uploadFolder = path.join(__dirname, "..", "uploads");
 
-// NEW: Configure where uploaded files are temporarily stored
+if (!fs.existsSync(uploadFolder)) {
+    fs.mkdirSync(uploadFolder);
+}
+
 const storage = multer.diskStorage({
-
-    // NEW: Store files inside the uploads folder
     destination: function (req, file, cb) {
-        cb(null, "uploads/");
+        cb(null, uploadFolder);
     },
 
-    // NEW: Give each uploaded file a unique filename
     filename: function (req, file, cb) {
-
-        const uniqueSuffix =
+        const uniqueName =
             Date.now() + "-" + Math.round(Math.random() * 1E9);
 
-        cb(
-            null,
-            file.fieldname + "-" + uniqueSuffix
-        );
+        cb(null, "image-" + uniqueName);
     }
 });
 
-
-// NEW: Create the Multer upload middleware
 const upload = multer({
     storage: storage
 });
