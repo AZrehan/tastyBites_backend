@@ -1,49 +1,53 @@
 const User = require("../models/User");
 
-
-// ADMIN: Get all users
+// Get all users
 const getUsers = async (req, res) => {
     try {
-        const users = await User.find()
-            .select("-password");
+        const users = await User.find().select("-password");
 
         res.status(200).json({
             success: true,
             data: users
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message
+            message: "Failed to get users"
         });
     }
 };
 
 
-// ADMIN: Delete a user by ID
+// Delete a user
 const deleteUser = async (req, res) => {
     try {
-        const { id } = req.params;
+        const user = await User.findById(req.params.id);
 
-        const deletedUser = await User.findByIdAndDelete(id);
-
-        if (!deletedUser) {
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found"
             });
         }
 
+        // NEW: Admin cannot delete another Admin
+        if (user.role === "Admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Admin users cannot be deleted"
+            });
+        }
+
+        await User.findByIdAndDelete(req.params.id);
+
         res.status(200).json({
             success: true,
             message: "User deleted successfully"
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message
+            message: "Failed to delete user"
         });
     }
 };
